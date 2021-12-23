@@ -2,11 +2,10 @@ const { request }=require('express')
 const uid = require('uid-safe');
 const cookie = require('cookie-signature');
 
-//const { validationResult } = require('express-validator');
 
 
 const session = {
-    ttl: 3600,
+    ttl: 10,
     cookieName: 'sessionId',
 }
 
@@ -15,7 +14,7 @@ const session = {
 const configSession = (req = request , res, next ) => {
     
     try {
-
+        
         req.session = session
         const { ttl = 3600, cookieName = 'sessionId', secret = 'mysecret'} = session;
         req.session.secret = secret;
@@ -24,33 +23,38 @@ const configSession = (req = request , res, next ) => {
         
         //ttl: Tiempo que puede durar la sesion inactiva(segundos). Si pasa el tiempo se debe crear
         //  otro usuario con diferente id ( default: 3600 )
-
         
-        if( !req.session.cookieName ){
-            let userId = uid.sync(18);
+        //cookieName: nombre de la cookie para almacenar el id de sesion( default: sessionId)
+                
+        //secret: para utilizar junto con cookie-signature darle mas seguridad al ID de sesión 
+        //  guardado en la cookie. (Default: “mysecret”)
+        
+        
+        let userId = uid.sync(18);
+        if( !req.cookies.cookieName ){
             res.cookie(req.session.cookieName, userId);
         }
+        const idSession = req.cookies[req.session.cookieName];
+        res.cookie( req.session.cookieName, idSession );
+        // guardar usuario en bd
 
-        
-        let time = new Date().getTime();
-        const timeSeconds = Math.floor((time / 1000) )
-        
+
+        const time = new Date().getTime();
+        const timeSeconds = Math.floor((time / 1000) );
         res.cookie('time', timeSeconds)
-
-        const x = req.cookies.time;
         
-        console.log( timeSeconds - x );
 
-        const comparar = timeSeconds - x;
+        
+        const cookieTime = req.cookies.time;
+        const sessionInactive = timeSeconds - cookieTime
+        console.log('Segundos de sesion inactiva: ', sessionInactive);
+        
 
-        if( comparar > 3600 ){
-            
+        if( sessionInactive > req.session.ttl ){
             userId = uid.sync(18);
             res.cookie(req.session.cookieName, userId);
-
         }
 
-        const val = cookie.sign()
         
 
 
@@ -77,22 +81,15 @@ const configSession = (req = request , res, next ) => {
         //    console.log(' crear un nuevo usuario con un conteo nuevo ');
         //}
 //
+
         //if( ( antCokie - time ) < 3600000  ){
         //        console.log( 'Se cumple la condicion y reinicia la sesion')
         //    }
         
 
 
-        
-        //cookieName: nombre de la cookie para almacenar el id de sesion( default: sessionId)
-    
 
-
-        //secret: para utilizar junto con cookie-signature darle mas seguridad al ID de sesión 
-        //  guardado en la cookie. (Default: “mysecret”)
-    
-
-        next()    
+        next();    
         
     } catch (error) {
         console.log(error)

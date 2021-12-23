@@ -10,9 +10,10 @@ const validation = require('../middlewares/valitation-cookie');
 const router = Router();
 
 
-router.get('/',
+router.get('/',[
     validation
-,userCount )
+],userCount )
+
 
 
 module.exports = router;

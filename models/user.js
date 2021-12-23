@@ -5,8 +5,8 @@ const DataSession = dbConnection.define('DataSession', {
     idSession: {
         type: DataTypes.STRING
     },
-    data: {
-        type: DataTypes.STRING
+    visit: {
+        type: DataTypes.NUMBER
     },
 });
 

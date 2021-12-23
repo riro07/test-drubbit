@@ -1,7 +1,43 @@
-const { request, response } = require('express')
+const { request, response } = require('express');
+const DataSession = require('../models/user');
 
 
-const userCount = ( req = request, res = response ) => {
+const userCount = async ( req = request, res = response ) => {
+
+    
+    try {
+        const { session } = req;
+    
+        const x = 0;
+        
+        await DataSession.findOne({
+            where: {
+                idSession: session.cookieName,
+                visit: x++
+            }
+        });
+
+        // if (existeEmail) {
+        //     return res.status(400).json({
+        //         msg: 'Ya existe un usuario con el email ' + body.email
+        //     });
+        // }
+
+
+        const dataSession = new DataSession(session);
+        await dataSession.save();
+
+        res.json( dataSession );
+
+
+    } catch (error) {
+
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        })    
+    }
+
 
     res.json({msg: 'controllers respons finally'})
 
